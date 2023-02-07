@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" style="background: lightblue">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link href="css/index.css" rel="stylesheet" />
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous"
+    />
+    <title>HHU - sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3</title>
+  </head>
+
+  <body>
+
+  {% if user.groups == 'ADMIN'%}
+      <h2>Admin Ansicht </h2>
+  {% endif %}
+
+  {%block content %}
+  {% csrf_token %}
+    <div class="mx-auto w-50" style="width:200px; height: 200px; padding: 180px;">
+      <!-- Benutzer ERSTELLEN -->
+      <button class="m-2" type="button"><a href="{% url 'create-user' %}">Admin erstellen</a></button><br>
+      <button class="m-2" type="button"><a href="{% url 'create-kursleiter' %}">Kursleiter erstellen</a></button><br>
+      <button class="m-2" type="button"><a href="{% url 'create-tutor' %}">Tutor erstellen</a></button><br>
+      <button class="m-2" type="button"><a href="{% url 'create-dozent' %}">Dozent erstellen</a></button><br>
+
+      <!-- Kurs und Übungsblätter ERSTELLEN -->
+      <button class="m-2" type="button"><a href="{% url 'create-kurs' %}">Kurs erstellen</a></button><br>
+      <button class="m-2" type="button"><a href="{% url 'create-blatt' %}">Blatt erstellen</a></button><br>
+
+      <!-- Benutzer Liste anzeigen -->
+      <!-- <button class="m-2" type="button"><a href="{% url 'list-user' %}">Alle Benutzer einsehen</a></button><br>
+      <button class="m-2" type="button"><a href="{% url 'list-kursleiter' %}">Alle Kursleiter einsehen</a></button><br>
+      <button class="m-2" type="button"><a href="{% url 'list-tutor' %}">Alle Tutor einsehen</a></button> -->
+
+    </div>
+    {% endblock %}
+  </body>
+</html>

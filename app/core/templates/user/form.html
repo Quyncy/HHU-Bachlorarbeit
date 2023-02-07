@@ -1,0 +1,30 @@
+<button type='button'><a href='{% url 'index' %}'>Zurück</a></button>
+
+<!--Kurse Formular-->
+<form method="post" style="background: lightblue">  
+  {% csrf_token %} {{form.as_p}} 
+  
+  
+  
+  <!-- {% comment %} Notiz: Eigene Namen geben... Kurs, Dozent, usw.
+  Macht das selbe wie oben nur umständlicher
+  <label for="{{form.module_name.id_for_label}}"
+    >{{form.module_name.label}}</label
+  >{{form.module_name}}
+  <br />
+  <label for="{{form.description.id_for_label}}"
+    >{{form.description.label}} </label
+  >{{form.description}}
+  <br />
+  <label for="{{form.dozent.id_for_label}}"> {{form.dozent.label}} </label
+  >{{form.dozent}}
+  <br />
+  <label for="{{form.teacher.id_for_label}}"> {{form.teacher.label}} </label
+  >{{form.teacher}}
+  <br />
+  <label for="{{form.semester.id_for_label}}">{{form.semester.label}}</label>
+  {{form.semester}}
+  <br />
+  {% endcomment %} -->
+  <input type="submit" value="Submit" />
+</form>

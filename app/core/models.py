@@ -2,6 +2,8 @@
 Database models.
 """
 from django.db import models
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -21,12 +23,16 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, email, password):
+    def create_superuser(self, email, password=None, **extra_fields):
         """Erstellt und gibt als Rückgabewert Superuser zurück."""
-        user = self.create_user(email, password)
+        user = self.create_user(
+            email, 
+            password, 
+            **extra_fields
+            )
+        user.is_active = True
         user.is_staff = True
         user.is_superuser = True
-        user.save(using=self._db)
 
         return user
 
@@ -47,6 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     nachname = models.CharField(max_length=255, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_superuser=models.BooleanField(default=False)
 
     objects = UserManager()
 
@@ -55,11 +62,12 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
 
+
     def save(self, *args, **kwargs):
         ##
         ###!!!!!!!!!
         # !!!!!!! base_user soll nur gespeichert werden, wenn es von dozent, kursleiter oder tutor gespeichert wird.
-        if not self.id:
+        if self.id:
             self.rolle = self.base_user
             # email senden verifizieren active auf True setzen und
             # passwort setzen
@@ -71,9 +79,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Kurs(models.Model):
     """Kurse im System"""
-    kurs_name = models.CharField(max_length=50, unique=True)
+    kurs = models.CharField(max_length=50, unique=True)
     beschreibung = models.TextField(blank=True)
-    ref_id = models.CharField(max_length=100)
+    ref_id = models.CharField(max_length=100, unique=True)
     # dozent = models.ForeignKey(Dozent, on_delete=models.CASCADE, related_name='kurs')
 
     class Meta:
@@ -91,6 +99,11 @@ class Blatt(models.Model):
 
     class Meta:
         verbose_name_plural = "Übungsblätter"
+
+    def __str__(self):
+        return f"{self.ass_name}"
+    
+
 
 
 ###############################################
@@ -121,7 +134,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 
 class TutorProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     tutor_id = models.IntegerField(null=True, blank=True)
     arbeitsstunden = models.FloatField(default=0)
 
@@ -133,7 +146,6 @@ class TutorProfile(models.Model):
 
 
 #####################################
-
 
 
 class KursleiterManager(BaseUserManager):
@@ -155,7 +167,7 @@ class Kursleiter(User):
 
 
 class KursleiterProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     Kursleiter_id = models.IntegerField(null=True, blank=True)
     kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE)
 
@@ -189,7 +201,7 @@ class DozentProfile(models.Model):
         Dr = "Dr", 'Dr'
 
     titel = models.CharField(("Rolle"), max_length=10, choices=Titel.choices, default='Prof.')
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name_plural = "Dozent Profil"
@@ -200,6 +212,17 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created and instance.rolle == "Dozent":
         DozentProfile.objects.create(user=instance)
 
+        
+ #############
 
-
+# @receiver(post_save, sender=User)
+# def create_profile(sender, instance, created, **kwargs):
+#     if created and instance.rolle == "Admin":
+#         get_user_model().objects.create(instance=instance)
+#     if created and instance.rolle == "Kursleiter":
+#         KursleiterProfile.objects.create(user=instance)
+#     if created and instance.rolle == "Tutor":
+#         TutorProfile.objects.create(user=instance)
+#     if created and instance.rolle == "Dozent":
+#         DozentProfile.objects.create(user=instance)
 

@@ -5,7 +5,15 @@ from core.models import *
 
 #########
 from django.contrib.auth.forms import UserCreationForm
-# from django.contrib.auth.models import get_user_model as User
+from django.contrib.auth import get_user_model
+
+
+class UserCreateForm(UserCreationForm):
+    class Meta:
+        model = User
+        # fields = '__all__'
+        exclude = ['password', 'last_login', 'groups', 'user_permissions']
+
 
 
 class SignUpForm(UserCreationForm):
@@ -24,7 +32,8 @@ class LoginForm(forms.Form):
 class TutorForm(forms.ModelForm):
     class Meta:
         model = Tutor
-        fields = '__all__'
+        # fields = '__all__'
+        exclude=['rolle', 'last_login', 'groups', 'user_permissions', 'password']
         # ['email', "vorname", "nachname", "tutor_id", "kurs_name", "role", "arbeitsstunden"]
         # exclude = ['password', 'last_login', ]
 
@@ -33,7 +42,7 @@ class TutorForm(forms.ModelForm):
             'vorname': _('Vorname'),
             'nachname': _('Nachname'),
             'tutor_id': _('Matrikelnummer'),
-            'kurs_name': _('Kurs'),
+            'kurs': _('Kurs'),
             'role': _('Rolle'),
             'arbeitsstunden': _('Arbeitsstunden'),
         }
@@ -42,7 +51,7 @@ class TutorForm(forms.ModelForm):
 class KursleiterForm(forms.ModelForm):
     class Meta:
         model = Kursleiter
-        exclude = ['date_joined','last_login',]
+        exclude=['rolle', 'last_login', 'groups', 'user_permissions', 'password']
 
         labels = {
             'email': _('Email'),
@@ -57,7 +66,7 @@ class UserForm(forms.ModelForm):
     """ Bei Admin eingaben werden die fields ignoriert """
     class Meta:
         model = User
-        exclude = ['date_joined','last_login',]
+        exclude=['rolle', 'last_login', 'groups', 'user_permissions', 'password']
 
         labels = {
             'email': _('Email'),
@@ -68,23 +77,24 @@ class UserForm(forms.ModelForm):
 class DozentForm(forms.ModelForm):
     class Meta:
         model = Dozent
-        fields = '__all__'
+        # fields = '__all__'
+        exclude=['rolle', 'last_login', 'groups', 'user_permissions', 'password']
         
-        labels = {
-            'title': _('Titel'),
-            'vorname': _('Vorname'),
-            'nachname': _('Nachname'),
-        }
+        # labels = {
+        #     'title': _('Titel'),
+        #     'vorname': _('Vorname'),
+        #     'nachname': _('Nachname'),
+        # }
 
-        error_messages = {
-            'titel':{
-                'required': _('Title has to be choosen')
-            },
-            'vorname':{
-                'required': _('First name has to be entered')
-            },
-            'nachname': _('Last name has to be entered')
-        },
+        # error_messages = {
+        #     'titel':{
+        #         'required': _('Title has to be choosen')
+        #     },
+        #     'vorname':{
+        #         'required': _('First name has to be entered')
+        #     },
+        #     'nachname': _('Last name has to be entered')
+        # },
 
 
 class KursForm(forms.ModelForm):
@@ -94,24 +104,24 @@ class KursForm(forms.ModelForm):
         # exclude=['dozent']
 
         # labels := Bezeichnung
-        labels = {
-            'kurs_name': _('Kursname eingeben'),
-            'beschreibung': _('Beschreibung eingegeben'),
-            'kursleiter': _('Kursleiter eingeben'),
-        }
-        error_messages = {
-            fields : {
-                'kurs_name': {
-                    'required': _('Module name has to be entered')
-                },
-                'beschreibung': {
-                    'required': _('Description has to be entered')
-                },
-                'Kursleiter': {
-                    'required': _('Teacher has to be entered')
-                },
-            }
-        }
+        # labels = {
+        #     'kurs': _('Kursname eingeben'),
+        #     'beschreibung': _('Beschreibung eingegeben'),
+        #     'kursleiter': _('Kursleiter eingeben'),
+        # }
+        # error_messages = {
+        #     fields : {
+        #         'kurs': {
+        #             'required': _('Module name has to be entered')
+        #         },
+        #         'beschreibung': {
+        #             'required': _('Description has to be entered')
+        #         },
+        #         'Kursleiter': {
+        #             'required': _('Teacher has to be entered')
+        #         },
+        #     }
+        # }
 
 
 class BlattForm(forms.ModelForm):
