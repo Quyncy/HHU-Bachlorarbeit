@@ -1,0 +1,31 @@
+<!-- <html style="background: lightblue">
+    <p>Benutzer erstellen</p>
+    <form method="post">
+        {% csrf_token %}
+        <label for="email">Email:</label><br/>
+        <input name="email" type="text" id="email">
+    </br>
+        <label for="vorname">Vorname:</label><br>
+        <input name="vorname" type="text" id="vorname">
+    </br>
+        <label for="nachname">Nachname:</label><br>
+        <input name="nachname" type="text" id="nachname">
+    <br>
+        <input type="submit" value="Submit">
+    </form>
+</html> -->
+
+
+<form method="post">
+    {% csrf_token %} {{form.as_p}}
+    <!-- <label for="{{form.email.id_for_label}}">{{form.email.label}}</label>{{form.titel}}
+    <br />
+
+    <label for="{{form.vorname.id_for_label}}">{{form.vorname.label}}</label>{{form.vorname}}
+    <br />
+
+    <label for="{{form.nachname.id_for_label}}">{{form.nachname.label}}</label>{{form.nachname}}
+    <br /> -->
+
+    <input type="submit" value="Submit" />
+</form>

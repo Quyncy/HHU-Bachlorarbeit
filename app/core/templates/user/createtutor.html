@@ -1,0 +1,31 @@
+<html style="background: lightblue">
+    <p>Tutor erstellen</p>
+
+    <form method="post">
+    {% csrf_token %}
+    {{form.as_p}}
+        <!-- <label for="email">Email:</label><br/>
+        <input name="email" type="text" id="email">
+    </br>
+        <label for="vorname">Vorname:</label><br>
+        <input name="vorname" type="text" id="vorname">
+    </br>
+        <label for="nachname">Nachname:</label><br>
+        <input name="nachname" type="text" id="nachname">
+    </br>
+        <label for="tutor_id">Matrikelnummer:</label><br>
+        <input name="tutor_id" type="text" id="tutor_id">
+    </br>    
+        <label for="kurs">Kurs:</label><br>
+        <select id="kurs" name="kurs">
+            <option value="Datenbanken">Datenbanken</option>
+            <option value="Rechnernetze">Rechnernetze</option>
+        </select>
+    </br>   
+        <label for="arbeitsstunden">Arbeitsstunden:</label><br>
+        <input name="arbeitsstunden" type="text" id="arbeitsstunden">
+    </br>   -->
+    </br>      
+        <input type="submit" value="Submit">
+    </form>
+</html>

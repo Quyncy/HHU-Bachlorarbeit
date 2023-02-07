@@ -1,0 +1,42 @@
+<!-- <html style="background: lightblue">
+    <form method="post">
+        {% csrf_token %}
+        <label for="email">Email:</label><br>
+        <input type="text"name="email" id="email">
+        <br>
+        <label for="vorname">Vorname:</label><br>
+        <input type="text" name="vorname" id="vorname">
+        <br>
+        <label for="nachname">Nachname:</label><br>
+        <input type="text" name="nachname" id="nachname">
+        <br>
+        <label for="kurs">Kurs:</label><br>
+            <select id="kurs" name="kurs">
+                <option value="Datenbanken">Datenbanken</option>
+                <option value="Rechnernetze">Rechnernetze</option>
+            </select>
+        <br>
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+</html> -->
+
+<form method="post">
+    {% csrf_token %} {{form.as_p}} 
+    
+    <!-- <label for="{{form.email.id_for_label}}">{{form.email.label}}</label>{{form.email}}
+    <br />
+
+    <label for="{{form.vorname.id_for_label}}">{{form.vorname.label}}</label>{{form.vorname}}
+    <br />
+
+    <label for="{{form.nachname.id_for_label}}">{{form.nachname.label}}</label>{{form.nachname}}
+    <br />
+
+    <label for="{{form.kurs.id_for_label}}">{{form.kurs.label}}</label>{{form.kurs}}
+    <br>  -->
+    <!-- Nur Kurs anzeigen, die schon in der Datenbank stehen -->
+    <!-- <label for="{{form.role.id_for_label}}">{{form.role.label}}</label>{{form.role}}
+    <br>  -->
+    <input type="submit" value="Submit" />
+</form>
