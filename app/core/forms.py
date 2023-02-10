@@ -4,24 +4,34 @@ from django.utils.translation import gettext_lazy as _
 from core.models import *
 
 #########
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
 
 
-class UserCreateForm(UserCreationForm):
+class AuthenticationForm(AuthenticationForm):
     class Meta:
         model = User
-        # fields = '__all__'
-        exclude = ['password', 'last_login', 'groups', 'user_permissions']
+        fields = '__all__'
 
 
+class CostumUserCreationForm(UserCreationForm):
+    class Meta:
+        model = User
+        exclude = ['password', 'last_login',]
 
-class SignUpForm(UserCreationForm):
-    email = forms.EmailField(max_length=254, help_text='Required. Inform a valid email address.')
+
+class CustomUserChangeForm(UserChangeForm):
 
     class Meta:
         model = User
-        fields = ('email', 'password1', 'password2', )
+        fields = ("email",)
+
+
+# class SignUpForm(UserCreationForm):
+#     email = forms.EmailField(max_length=254, help_text='Required. Inform a valid email address.')
+
+#     class Meta:
+#         model = User
+#         fields = ('email', 'password1', 'password2', )
 
 
 class LoginForm(forms.Form):
@@ -29,22 +39,19 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
 
 
-class TutorForm(forms.ModelForm):
+################################## 
+
+
+class UserForm(forms.ModelForm):
+    """ Bei Admin eingaben werden die fields ignoriert """
     class Meta:
-        model = Tutor
-        # fields = '__all__'
+        model = User
         exclude=['rolle', 'last_login', 'groups', 'user_permissions', 'password']
-        # ['email', "vorname", "nachname", "tutor_id", "kurs_name", "role", "arbeitsstunden"]
-        # exclude = ['password', 'last_login', ]
 
         labels = {
             'email': _('Email'),
             'vorname': _('Vorname'),
             'nachname': _('Nachname'),
-            'tutor_id': _('Matrikelnummer'),
-            'kurs': _('Kurs'),
-            'role': _('Rolle'),
-            'arbeitsstunden': _('Arbeitsstunden'),
         }
 
 
@@ -60,19 +67,35 @@ class KursleiterForm(forms.ModelForm):
             'kurs_name': _('Kurs'),
             'role': _('Rolle'),
         }
-        
 
-class UserForm(forms.ModelForm):
-    """ Bei Admin eingaben werden die fields ignoriert """
+
+# class KursleiterProfileForm(forms.Modelform):
+#     class Meta:
+#         model = KursleiterProfile
+#         fields = '__all__'
+#         # exclude = ['']
+
+
+########################
+
+
+class TutorForm(forms.ModelForm):
     class Meta:
-        model = User
-        exclude=['rolle', 'last_login', 'groups', 'user_permissions', 'password']
+        model = Tutor
+        fields = '__all__'
+    
+        # exclude=['rolle', 'last_login', 'groups', 'user_permissions', 'password']
 
-        labels = {
-            'email': _('Email'),
-            'vorname': _('Vorname'),
-            'nachname': _('Nachname'),
-        }
+
+class TutorProfileForm(forms.ModelForm):
+    class Meta:
+        model = TutorProfile
+        fields = '__all__'
+        # fields = ['user, tutor_id, kurs, arbeitsstunden']
+
+        
+##############################
+
 
 class DozentForm(forms.ModelForm):
     class Meta:
@@ -95,6 +118,9 @@ class DozentForm(forms.ModelForm):
         #     },
         #     'nachname': _('Last name has to be entered')
         # },
+
+
+############################
 
 
 class KursForm(forms.ModelForm):

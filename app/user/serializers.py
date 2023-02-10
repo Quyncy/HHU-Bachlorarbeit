@@ -19,72 +19,44 @@ from .helpers import *
 
 class UserSerializer(serializers.ModelSerializer):
     """ Serializer für den Benutzer """
-    # password2 = serializers.CharField(style={'input_type': 'password'},write_only=True)
-    password = serializers.CharField(max_length=255, style={'input_type': 'password'})
 
     class Meta:
         model =  User
         fields = '__all__'
         # extra_kwargs = {'password': {'write_only':True}}
-
         # fields = ['email', 'vorname', 'nachname', 'rolle','password', 'password2']
-# So sollte die json aussehen
-#     {
-#     "id": 5,
-#     "password": "admin132",
-#     "last_login": null,
-#     "is_superuser": false,
-#     "rolle": "Dozent",
-#     "email": "dozent@hhu.de",
-#     "vorname": "Dozent",
-#     "nachname": "Zwei",
-#     "is_active": true,
-#     "is_staff": false,
-#     "groups": [],
-#     "user_permissions": []
-# }
+
     def create(self, validated_data):
-        """Create and return a user with encrypted password."""
-        return get_user_model().objects.create_user(**validated_data)
+        
+        user = User.objects.create_user(
+                email = self.validated_data['email'],
+                vorname = self.validated_data['vorname'],
+                nachname = self.validated_data['nachname'],
+                rolle = self.validated_data['rolle'],
+                is_active = self.validated_data['is_active'],
+                is_staff = self.validated_data['is_staff'],
+                is_superuser = self.validated_data['is_superuser'],
+                is_admin = self.validated_data['is_admin'],
+                is_tutor = self.validated_data['is_tutor'],
+                is_kursleiter = self.validated_data['is_kursleiter'],
+                is_dozent = self.validated_data['is_dozent'],
+        )
+        user.set_password(self.validated_data['password'])
+        user.save()
 
-    def save(self):
-            email = self.validated_data['email']
-            password = self.validated_data['password']
-            print(password)
-            rolle = self.validated_data['rolle']
-            vorname = self.validated_data['vorname']
-            nachname = self.validated_data['nachname']
-            is_active = self.validated_data['is_active']
-            is_staff = self.validated_data['is_staff']
-            is_superuser = self.validated_data['is_superuser']
-
-            # if password != password2:
-            #     return Response("Falsches Passwort")
-
-            # else:
-            user = get_user_model().objects.create(
-                    email=email,
-                    rolle=rolle,
-                    vorname=vorname,
-                    nachname=nachname,
-                    is_superuser=is_superuser,
-                    is_active = is_active,
-                    is_staff=is_staff,
-                    password=password,
-                )
-            user.save()
-            return user
+        # return get_user_model().objects.create_user(**validated_data)
+        return user
 
     def update(self, instance, validated_data):
-            """Update und return user."""
-            password = validated_data.pop('password', None)
-            user = super().update(instance, validated_data)
+        """Update und return user."""
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
 
-            if password:
-                user.set_password(password)
-                user.save()
+        if password:
+            user.set_password(password)
+            user.save()
 
-            return user
+        return user
 
 
 class KursleiterSerializer(serializers.ModelSerializer):
@@ -95,35 +67,42 @@ class KursleiterSerializer(serializers.ModelSerializer):
         fields = '__all__' 
         # ('email', 'vorname', 'nachname','rolle',)
 
-    def save(self):
-        email = self.validated_data['email']
-        password = self.validated_data['password']
+    def create(self, validated_data):
+        kurs=self.validated_data['kurs']
+        print('TEST: serializers.py')
+        print(kurs)
+        user = Kursleiter.objects.create_user(
+            email = self.validated_data['email'],
+            vorname = self.validated_data['vorname'],
+            nachname = self.validated_data['nachname'],
+            rolle = self.validated_data['rolle'],
+            is_active = self.validated_data['is_active'],
+            is_staff = self.validated_data['is_staff'],
+            is_superuser = self.validated_data['is_superuser'],
+            # groups, 
+            # user_permissions,
+        )
+        user.set_password(self.validated_data['password'])
+        user.save()
 
-        rolle = self.validated_data['rolle']
+        print(user)
 
-        is_superuser = self.validated_data['is_superuser']
-        vorname = self.validated_data['vorname']
-        nachname = self.validated_data['nachname']
-        is_active = self.validated_data['is_active']
-        is_staff = self.validated_data['is_staff']
+        # KursleiterProfile.objects.create(user=kursleiter)
 
-        # if password != password2:
-        #     return Response("Falsches Passwort")
+        return user
 
-        # else:
-        kursleiter = Kursleiter.objects.create_user(
-                email=email,
-                rolle=rolle,
-                vorname=vorname,
-                nachname=nachname,
-                is_superuser=is_superuser,
-                is_active=is_active,
-                is_staff=is_staff,
-            )
-        kursleiter.set_password(password)
-        kursleiter.save()
 
-        return kursleiter
+class KursleiterProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = KursleiterProfile
+        fields = '__all__'
+
+    # def create(self, validated_data):
+    #     kursleiterprofile = KursleiterProfile(
+            
+    #     )
+
 
 
 ################
@@ -131,38 +110,63 @@ class KursleiterSerializer(serializers.ModelSerializer):
 
 class TutorSerializer(serializers.ModelSerializer):
     # tutor = TutorSerializer(many=True, read_only=True)
-
+    # user = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    
     class Meta:
         model = Tutor
-        # fields = '__all__' 
-        exclude = ['last_login']
-        # ('email', 'vorname', 'nachname','rolle',)
+        fields = '__all__' 
+        # exclude = ['last_login']
 
-    def save(self):
-        email = self.validated_data['email']
-        password = self.validated_data['password']
+    # def create(self, validated_data):
+    #     """Create and return a user with encrypted password."""
+    #     print(validated_data)
+    #     # tutor = Tutor.objects.create_user(**validated_data)
+    #     # print(tutor.email)
+    #     return Tutor.objects.create_user(**validated_data)
 
-        rolle = self.validated_data['rolle']
-
-        is_superuser = self.validated_data['is_superuser']
-        vorname = self.validated_data['vorname']
-        nachname = self.validated_data['nachname']
-        is_active = self.validated_data['is_active']
-        is_staff = self.validated_data['is_staff']
-
-        tutor = Tutor.objects.create_user(
-                email=email,
-                rolle=rolle,
-                vorname=vorname,
-                nachname=nachname,
-                is_superuser=is_superuser,
-                is_active=is_active,
-                is_staff=is_staff,
+    def create(self, validated_data):
+        tutor = Tutor(
+                email = self.validated_data['email'],
+                vorname = self.validated_data['vorname'],
+                nachname = self.validated_data['nachname'],
+                rolle = self.validated_data['rolle'],
+                is_active = self.validated_data['is_active'],
+                is_staff = self.validated_data['is_staff'],
+                is_superuser = self.validated_data['is_superuser'],
+                is_admin = self.validated_data['is_admin'],
+                is_tutor = self.validated_data['is_tutor'],
+                is_kursleiter = self.validated_data['is_kursleiter'],
+                is_dozent = self.validated_data['is_dozent'],
             )
-        tutor.set_password(password)
+        tutor.set_password(self.validated_data['password'])
         tutor.save()
 
+        # TutorProfile.objects.create(
+        #     user=tutor, 
+        #     tutor_id=self.validated_data['tutor_id'],
+        #     kurs=self.validated_data['kurs'],
+        # )
+
         return tutor
+
+
+class TutorProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TutorProfile
+        fields = '__all__'
+
+        # def create(self, validated_data):
+        #     tutorprofile = TutorProfile(
+        #         user=self.validated_data['user'],
+        #         kurs=self.validated_data['kurs'],
+        #         tutor_id=self.validated_data['tutor_id'],
+        #         arbeitsstunden=self.validated_data['arbeitsstunden'],
+        #     )
+        #     tutorprofile.save()
+
+        #     return tutorprofile
+
 
 
 ################
@@ -174,30 +178,27 @@ class DozentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-    def save(self):
-        email = self.validated_data['email']
-        password = self.validated_data['password']
-
-        rolle = self.validated_data['rolle']
-        is_superuser = self.validated_data['is_superuser']
-        vorname = self.validated_data['vorname']
-        nachname = self.validated_data['nachname']
-        is_active = self.validated_data['is_active']
-        is_staff = self.validated_data['is_staff']
+    def create(self, validated_data):  
         # groups = self.validated_data['groups'],
         # user_permissions = self.validated_data['user_permissions'],
 
-        dozent = Dozent.objects.create_user(
-                email=email,
-                rolle=rolle,
-                vorname=vorname,
-                nachname=nachname,
-                is_superuser=is_superuser,
-                is_active = is_active,
-                is_staff=is_staff,
+        dozent = Dozent(
+                email = self.validated_data['email'],
+                rolle = self.validated_data['rolle'],
+                vorname = self.validated_data['vorname'],
+                nachname = self.validated_data['nachname'],
+                is_active = self.validated_data['is_active'],
+                is_staff = self.validated_data['is_staff'],
+                is_superuser = self.validated_data['is_superuser'],
+                is_admin = self.validated_data['is_admin'],
+                is_tutor = self.validated_data['is_tutor'],
+                is_kursleiter = self.validated_data['is_kursleiter'],
+                is_dozent = self.validated_data['is_dozent'],
             )
-        dozent.set_password(password)
+        dozent.set_password(self.validated_data['password'])
         dozent.save()
+
+        DozentProfile.objects.create(user=dozent)
 
         return dozent
 

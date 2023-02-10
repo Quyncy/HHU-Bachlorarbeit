@@ -1,10 +1,35 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
-
 from core.models import *
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.translation import gettext_lazy as _
+from .forms import CostumUserCreationForm, CustomUserChangeForm
 
-# # User-View
+
+class CostumUserAdmin(BaseUserAdmin):
+    add_form = CostumUserCreationForm
+    form = CustomUserChangeForm
+    model = User
+    list_display = ("email", "is_staff", "is_active", "is_superuser", "is_admin", "is_tutor", "is_kursleiter",)
+    list_filter = ("email", "is_staff", "is_active", "is_superuser","is_admin", "is_tutor", "is_kursleiter",)
+    fieldsets = (
+        (None, {"fields": ("email", "password")}),
+        ("Permissions", {"fields": ("is_staff", "is_active", "is_superuser", "is_admin", "is_tutor", "is_kursleiter", 
+        "groups", "user_permissions")}),
+    )
+
+    add_fieldsets = (
+        (None, {
+            "classes": ("wide",),
+            "fields": (
+                "email", "password1", "password2", "is_staff",
+                "is_active",  "is_superuser","is_admin", "is_tutor", "is_kursleiter", "groups", "user_permissions"
+            )}
+        ),
+    )
+    search_fields = ("email",)
+    ordering = ("email",)
+
+# User-View
 # class UserAdminConfig(UserAdmin):
 #     list_display = ('id', 'email', 'vorname', 'nachname', 'role', 'date_published', 'date_modified', )
 #     list_filter = ('role',)
@@ -69,15 +94,15 @@ from core.models import *
 #     list_display = ('email')
 
 
-admin.site.register(User) # UserConfigAdmin
+admin.site.register(User, CostumUserAdmin) # UserConfigAdmin
 
 admin.site.register(Dozent)
 admin.site.register(DozentProfile)
 
-admin.site.register(Kursleiter) # , KursleiterView
+admin.site.register(Kursleiter, CostumUserAdmin) # , KursleiterView
 admin.site.register(KursleiterProfile)
 
-admin.site.register(Tutor) # , TutorView
+admin.site.register(Tutor, CostumUserAdmin) # , TutorView
 admin.site.register(TutorProfile)
 
 admin.site.register(Kurs) # , KursView

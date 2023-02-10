@@ -1,0 +1,25 @@
+<table>
+        <tr>
+            <th>Titel</th>
+            <th>Vorname</th>
+            <th>Nachname</th>
+        </tr>
+
+        {% for i in dozent %}
+        <tr>
+            <td>{{i.vorname}}</td>
+            <td>{{i.nachname}}</td>
+            <td><button type="text"><a href="">Bearbeiten</a></button></td>
+            <td><button class="btn-danger" type="text"><a href="">Löschen</a></button></td>
+            {% if messages %}
+                {% for message in messages %}
+                <td>
+                    <div class='alert'>
+                    {{ message }}
+                    </div>
+                </td>
+                {% endfor %}
+            {% endif %}
+        </tr>
+        {% endfor %}
+</table>

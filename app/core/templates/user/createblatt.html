@@ -1,6 +1,9 @@
 <html style="background: lightblue">
 <body >
     <p>Blatt erstellen</p>
+    {% if messages %}
+    {% for i in messages %}
+    {}
     <form method="post">
     {% csrf_token %}    
     {{form.as_p}}

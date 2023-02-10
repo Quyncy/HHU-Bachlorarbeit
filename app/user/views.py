@@ -3,17 +3,22 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from django.contrib.auth import get_user_model
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics, status, authentication, permissions
 
 from .serializers import (
-    UserSerializer, KursleiterSerializer, DozentSerializer, TutorSerializer
+    UserSerializer, KursleiterSerializer, KursleiterProfileSerializer,
+    DozentSerializer, TutorSerializer, TutorProfileSerializer
 )
-# , KursleiterProfilSerializer, TutorProfilSerializer, DozentProfilSerializer
+# DozentProfilSerializer
 
 from rest_framework.authtoken.models import Token
 
 from core.models import (
-    User, Kursleiter, Dozent, Tutor # , , KursleiterProfile, DozentProfile, TutorProfile,
+    User, Kursleiter, Dozent, Tutor, 
+    KursleiterProfile, TutorProfile
+    # DozentProfile, ,
 )
 
 
@@ -35,6 +40,12 @@ def apiOverView(request):
     return Response(api_urls)
 
 
+@api_view(['POST'])
+def logout_view(request):
+    if request.method == 'POST':
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_200_OK)
+
 #####################################
 
 class CreateUserView(generics.CreateAPIView):
@@ -43,35 +54,20 @@ class CreateUserView(generics.CreateAPIView):
 
 
 class UserListView(generics.ListAPIView):
-    queryset = User.objects.all()
+    queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
+    permission_classes=[]
 
 
 class UserDetailView(APIView):
-# So sollte die json aussehen
-#     {
-#     "id": 5,
-#     "password2": "admin132",      !!!!!
-#     "password": "admin132",
-#     "last_login": null,
-#     "is_superuser": false,
-#     "rolle": "Dozent",
-#     "email": "dozent@hhu.de",
-#     "vorname": "Dozent",
-#     "nachname": "Zwei",
-#     "is_active": true,
-#     "is_staff": false,
-#     "groups": [],
-#     "user_permissions": []
-# }
 
     def get(self, request, pk):
-        user = User.objects.get(pk=pk)
+        user = get_user_model().objects.get(pk=pk)
         serializer = UserSerializer(user, many=False)
         return Response(serializer.data)
 
     def put(self, request, pk):
-        user = User.objects.get(pk=pk)
+        user = get_user_model().objects.get(pk=pk)
         serializer = UserSerializer(user, request.data)
 
         if serializer.is_valid():
@@ -81,12 +77,13 @@ class UserDetailView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
 
     def delete(self, request, pk):
-        user = User.objects.get(pk=pk)
+        user = get_user_model().objects.get(pk=pk)
         user.delete()
         return Response("User wurde erfolgreich gelöscht.")
 
 
 ###################################
+
 
 class CreateKursleiterView(generics.CreateAPIView):
     # KursleiterProfile
@@ -123,7 +120,25 @@ class KursleiterDetailView(APIView):
         return Response("Kursleiter wurde erfolgreich gelöscht.")
 
 
+########
+
+
+class CreateKursleiterProfileView(generics.CreateAPIView):
+    serializer_class = KursleiterProfileSerializer
+    permission_classes=[]
+
+
+class KursleiterProfileListView(generics.ListAPIView):
+    queryset = KursleiterProfile.objects.all()
+    serializer_class = KursleiterSerializer
+
+
+
+
 #################################################
+
+
+
 
 class CreateTutorView(generics.CreateAPIView):
     serializer_class = TutorSerializer
@@ -159,7 +174,25 @@ class TutorDetailView(APIView):
         user.delete()
         return Response("Tutor wurde erfolgreich gelöscht.")
 
+
+##############
+class TutorProfileView(generics.CreateAPIView):
+    serializer_class = TutorProfileSerializer
+    permission_classes=[]
+
+
+class TutorProfileListView(generics.ListAPIView):
+    queryset = TutorProfile.objects.all()
+    serializer_class = TutorProfileSerializer
+    permission_classes = []
+
+
+
+
+
 #################################################
+
+
 
 
 class CreateDozentView(generics.CreateAPIView):
@@ -193,6 +226,10 @@ class DozentDetailView(APIView):
         user = Dozent.objects.get(pk=pk)
         user.delete()
         return Response("Dozent wurde erfolgreich gelöscht.")
+
+
+
+
 
 ##################################################
 
