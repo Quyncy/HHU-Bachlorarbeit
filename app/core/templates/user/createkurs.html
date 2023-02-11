@@ -1,0 +1,32 @@
+<html style="background: lightblue">
+<body >
+    <p>Kurs erstellen</p>
+    <form method="post">
+    {% csrf_token %}    
+    {{form.as_p}}
+
+    <!-- <label for="id_kurs">Kursname eingeben:</label>
+    <input type="text" name="kurs" maxlength="50" required="" id="id_kurs">
+    <br>
+    <p>
+        <label for="id_beschreibung">Beschreibung eingegeben:</label> 
+        <textarea name="beschreibung" cols="40" rows="10" id="id_beschreibung"></textarea>
+    </p>
+    <p>
+        <label for="id_ref_id">Ref id:</label> 
+        <input type="text" name="ref_id" maxlength="100" required="" id="id_ref_id">
+    </p>
+    <p> -->
+    <!-- <select name="dozent" required="" id="id_dozent">
+        <!-- <option value="ID">Datenbanken</option> -->
+        <!--{% for i in dozent %}
+            <option value="{{i.id}}">{{i.title}} {{i.vorname}} {{i.nachname}}</option>
+        {% endfor %}
+    </select>
+    </p> -->
+
+
+    <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<table>
+    <tr>
+        <th>Kurs</th>
+        <th>Assigment ID</th>
+        <th>Übungsblatt</th>
+    </tr>
+
+    {% for i in blatt %}
+    <tr>
+        <td>{{i.kurs}}</td>
+        <td>{{i.ass_id}}</td>
+        <td>{{i.ass_name}}</td>
+        <td><button type="text"><a href="">Bearbeiten</a></button></td>
+        <td><button class="btn-danger" type="text"><a href="">Löschen</a></button></td>
+        {% if messages %}
+            {% for message in messages %}
+            <td>
+                <div class='alert'>
+                {{ message }}
+                </div>
+            </td>
+            {% endfor %}
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>

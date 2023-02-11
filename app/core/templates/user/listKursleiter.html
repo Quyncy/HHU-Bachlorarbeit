@@ -1,0 +1,31 @@
+<html style="background: lightblue">
+<div class="row">
+    <div class="col-md">
+         <div class="card card-body">
+             <h2>Alle Kursleiter</h2>
+         </div>
+         <div class="card card-body">
+             <table>
+                 <tr>
+                     <th>Email</th>
+                     <th>Vorname</th>
+                     <th>Nachname</th>
+                     <th>Kurs</th>
+                 </tr>
+ 
+                 {% for i in user %}
+                 <tr>
+                     <td>{{i.email}}</td>
+                     <td>{{i.vorname}}</td>
+                     <td>{{i.nachname}}</td>
+                     <td>{{i.kurs_name}}</td>
+                     <td><button type="text"><a href="">Bearbeiten</a></button></td>
+                     <td><button class="btn-danger"m type="text"><a href="">Löschen</a></button></td>
+                 </tr>
+                 {% endfor %}
+             </table>
+         </div>
+ 
+    </div> 
+ </div>
+ </html>
