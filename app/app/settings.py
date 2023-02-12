@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
+    'rest_email_auth',
 ]
 
 MIDDLEWARE = [
@@ -143,15 +144,33 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #     )
 # }
 
+
+AUTH_USER_MODEL = "core.User"
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.AllowAllUsersModelBackend',
+    'core.auth.EmailBackend',
+    # 'rest_email_auth.authentication.VerifiedEmailBackend',
+]
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ],
 }
 
-LOGIN_REDIRECT_URL="list-user"
+# LOGIN_REDIRECT_URL="list-user"
 
-AUTHENTICATION_BACKENDS=['core.auth.EmailBackend']
+
+#AUTHENTICATION_BACKENDS=['core.auth.EmailBackend']
+
+REST_EMAIL_AUTH = {
+    'EMAIL_VERIFICATION_URL': 'https://example.com/verify/{key}',
+    'PASSWORD_RESET_URL': 'https://example.com/reset/{key}',
+}
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_PERMISSION_CLASSES': [
@@ -173,6 +192,3 @@ EMAIL_HOST_USER = '@emaileingeben'
 EMAIL_HOST_PASSWORD = '@einPasswort'
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-
-
-AUTH_USER_MODEL = "core.User"

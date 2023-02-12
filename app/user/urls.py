@@ -2,15 +2,19 @@
 Ansicht für die User API
 """
 from django.urls import path
-from rest_framework.authtoken.views import obtain_auth_token
 from user import views
+
+from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
     path('', views.apiOverView, name='apiOverView'),
 
-    path('login/', obtain_auth_token, name='login'),    # token erhalten
+    path('login/', obtain_auth_token, name='token'),
+
+    path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
 
+    path('token/', views.CreateTokenView.as_view(), name='token'),
 
     # User
     path('create-user/', views.CreateUserView.as_view(), name='create-user'),

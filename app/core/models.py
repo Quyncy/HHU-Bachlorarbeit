@@ -2,35 +2,36 @@
 Datbank mMdels.
 """
 from django.db import models
-
 from django.conf import settings
-from django.contrib.auth import get_user_model
-
-from django.contrib.auth.models import (
-    AbstractBaseUser, BaseUserManager, PermissionsMixin)
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from rest_framework.authtoken.models import Token
+# from rest_framework.authtoken.models import Token
 
 
 class UserManager(BaseUserManager):
     """Manager for users."""
 
-    def create_user(self, email, password=None, **extrafields):
-        """Erstellt, speichert und gibt als Rückgabewert User zurück."""
+    def create_user(self, email, password, **extrafields):
+        """
+        Creates and saves a User with the given email and password.
+        """
+        if not email:
+            raise ValueError('The given email must be set')
 
         user = self.model(
             email=self.normalize_email(email), 
             **extrafields
-            )
-        print('Hier usermanager')
-        print(password)
+        )
         user.set_password(password)
         user.save(using=self._db)
-
         return user
+
+    # def create_user(self, email, password=None, **extra_fields):
+    #     extra_fields.setdefault('is_superuser', False)
+    #     return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password=None, **extrafields):
         """Erstellt und gibt als Rückgabewert Superuser zurück."""
@@ -57,7 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # base_user=Rolle.Admin
 
-    rolle = models.CharField(("Rolle"), max_length=10, choices=Rolle.choices)
+    rolle = models.CharField(("Rolle"), max_length=10, choices=Rolle.choices, default=Rolle.Admin)
     email = models.EmailField(max_length=255, unique=True)
     vorname = models.CharField(max_length=255, blank=True)
     nachname = models.CharField(max_length=255, blank=True)
@@ -72,8 +73,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    class Meta:
-        verbose_name_plural = "Benutzer"
 
     USERNAME_FIELD = 'email'
 
@@ -87,7 +86,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         return super().save(*args, **kwargs)
 
 
+
+
+
 ###################################
+
+
+
+
+
 
 
 class Kurs(models.Model):
@@ -102,6 +109,8 @@ class Kurs(models.Model):
 
     def __str__(self):
         return f"{self.kurs}"
+
+
 
 
 class Blatt(models.Model):
@@ -127,23 +136,29 @@ class Blatt(models.Model):
 
 
 class Kursleiter(User):
+    """ 
+    
+    
+    Problem.
+    
+    Kursleiter werden auf der Admin Seite anders gespeichert und nicht gehasht!!!!
+    
+    
+    
+    
+    
+    """
     kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True, related_name="kursleiter")
     rolle = User.Rolle.Kursleiter
 
     class Meta:
         verbose_name_plural = "Kursleiter"
 
-
-
-class KursleiterProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True,related_name="kursleiterprofile")
-
-    class Meta:
-        verbose_name_plural = "Kursleiter Profil"
-
     def __str__(self):
-        return f"{self.user.email}"
+        return f"{self.email}"
+
+
+
 
 
 #########################
@@ -162,19 +177,6 @@ class Tutor(User):
 
 
 
-class TutorProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True, related_name="tutorprofile")
-    tutor_id = models.CharField(max_length=100, unique=True, null=True, blank=True,default=None)
-    arbeitsstunden = models.FloatField(default=0)
-
-    class Meta:
-        verbose_name_plural = "Tutor Profil"
-
-    def __str__(self):
-        return f"{self.user.email}"
-
-
 
 #####################################
 
@@ -191,6 +193,80 @@ class Dozent(User):
     class Meta:
         verbose_name_plural = "Dozenten"
     
+
+
+
+
+
+
+# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+# def create_dozent_profile(sender, instance, created, **kwargs):
+#     if created:
+#         # DozentProfile.objects.create(user=instance)
+#         Token.objects.create(user=instance)
+
+
+
+# @receiver(post_save, sender=Kursleiter)
+# def create_user_profile(sender, instance, created, **kwargs):
+#     if created and instance.rolle == "Kursleiter":
+#         # KursleiterProfile.objects.create(user=instance)
+#         Token.objects.create(user=instance)
+
+
+
+# @receiver(post_save, sender=Tutor)
+# def create_tutor_profile(sender, instance=None, created=False, **kwargs):
+#     if created and instance.rolle == "Tutor":
+#         print('ich bin hier post save tutor profile')
+#         # TutorProfile.objects.create(user=instance)
+#         Token.objects.create(user=instance)
+
+
+# @receiver(post_save, sender=Dozent)
+# def create_dozent_profile(sender, instance, created, **kwargs):
+#     if created and instance.rolle == "Dozent":
+#         # DozentProfile.objects.create(user=instance)
+#         Token.objects.create(user=instance)
+
+
+
+
+
+
+
+
+
+####################################
+
+
+
+class KursleiterProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True,related_name="kursleiterprofile")
+
+    class Meta:
+        verbose_name_plural = "Kursleiter Profil"
+
+    def __str__(self):
+        return f"{self.user.email}"
+
+
+
+
+class TutorProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True, related_name="tutorprofile")
+    tutor_id = models.CharField(max_length=100, unique=True, null=True, blank=True,default=None)
+    arbeitsstunden = models.FloatField(default=0)
+
+    class Meta:
+        verbose_name_plural = "Tutor Profil"
+
+    def __str__(self):
+        return f"{self.user.email}"
+
+
 
 
 class DozentProfile(models.Model):
@@ -212,44 +288,20 @@ class DozentProfile(models.Model):
 
 
 
-@receiver(post_save, sender=User)
-def create_profile(sender, instance=None, created=False, **kwargs):
-    if created and instance.rolle == Kursleiter:
-        print("Kursleiterprofil und Token wurde erstellt")
-        # KursleiterProfile.objects.create(user=instance)
-        Token.objects.create(user=instance)
-    if created and instance.rolle == Tutor:
-        print("Tutorprofil und Token wurde erstellt")
-        # TutorProfile.objects.create(user=instance)
-        Token.objects.create(user=instance)
-    if created and instance.rolle == Dozent:
-        print("Dozent Profil und Token wurde erstellt")
-        # DozentProfile.objects.create(user=instance)
-        Token.objects.create(user=instance)
-
-
-
-
-@receiver(post_save, sender=Dozent)
-def create_dozent_profile(sender, instance, created, **kwargs):
-    if created and instance.rolle == "Dozent":
-        # DozentProfile.objects.create(user=instance)
-        Token.objects.create(user=instance)
-
-
-
-@receiver(post_save, sender=Kursleiter)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created and instance.rolle == "Kursleiter":
-        # KursleiterProfile.objects.create(user=instance)
-        Token.objects.create(user=instance)
-
-
-
-@receiver(post_save, sender=Tutor)
-def create_tutor_profile(sender, instance=None, created=False, **kwargs):
-    if created and instance.rolle == "Tutor":
-        print('ich bin hier post save tutor profile')
-        TutorProfile.objects.create(user=instance)
-        Token.objects.create(user=instance)
-
+# @receiver(post_save, sender=get_user_model())
+# def create_profile(sender, instance=None, created=False, **kwargs):
+#     if created and instance.rolle == 'Kursleiter':
+#         print("Kursleiterprofil und Token wurde erstellt")
+#         # KursleiterProfile.objects.create(user=instance)
+#         Kursleiter.objects.create(email=instance.email)
+#         Token.objects.create(user=instance)
+#     if created and instance.rolle == 'Tutor':
+#         print("Tutorprofil und Token wurde erstellt")
+#         # TutorProfile.objects.create(user=instance)
+#         Tutor.objects.create(user=instance)
+#         Token.objects.create(user=instance)
+#     if created and instance.rolle == 'Dozent':
+#         print("Dozent Profil und Token wurde erstellt")
+#         # DozentProfile.objects.create(user=instance)
+#         Dozent.objects.create(user=instance)
+#         Token.objects.create(user=instance)

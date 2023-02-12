@@ -1,7 +1,13 @@
 <button type='button'><a href='{% url 'index-admin' %}'>Zurück</a></button>
 
-<!--Kurse Formular-->
+<!--Kurse Formular    
+  
+  django.middleware.csrf.get_token(request)
+
+  
+-->
 <form method="post" style="background: lightblue">  
-  {% csrf_token %} {{form.as_p}} 
+  {% csrf_token %} 
+  {{form.as_p}} 
   <input type="submit" value="Submit" />
 </form>

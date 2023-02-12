@@ -7,20 +7,18 @@ from .forms import (
 
 import requests, json
 
-from core.auth import EmailBackend
+from django.conf import settings
 
 from rest_framework.response import Response
 from rest_framework import status
 
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model,login,logout
+from django.contrib.auth import login,logout, authenticate
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import Group
-from django.contrib.auth import authenticate
+
 
 # @login_required
 # def addToTutorGroup(request):
@@ -35,15 +33,32 @@ def Index(request):
     return render(request, 'user/index-admin.html')
 
 
-def loginView(request):
+def login_view(request):
     if request.POST:
-        username = request.POST.get('username')
-        password=request.POST.get('password')
-        user = authenticate(username=username, password=password)
-        print(user)
+        form = AuthenticationForm(request=request, data=request.POST)
+
+        # username = form.cleaned_data['username']
+        # password = form.cleaned_data['password']
+        # username = request.POST.get('username')
+        # password=request.POST.get('password')
+        # print('core views.py: login')
+
+        # user = authenticate(username=username, password=password)
+        # print('user: ')
+        # print(user)
+
+        if form.is_valid(): # muss nur is_active=True sein?
+            user=form.get_user()
+            if user is not None:
+                login(request, user)
+                print('login(request, user): ')
+                print(login(request, user))
+                return redirect('index-admin')
 
         if user is not None:
             login(request, user)
+            print('login(request, user): ')
+            print(login(request, user))
             return redirect('index-admin')
             # A backend authenticated the credentials
         elif user is not None and user.is_tutor:
@@ -52,22 +67,34 @@ def loginView(request):
         elif user is not None and user.is_kursleiter:
             login(request, user)
             return redirect('index-kursleiter')
+
         # if form.is_valid(): # muss nur is_active=True sein?
         #     user=form.get_user()
-        #     print('Ich bin hier')
         #     print(user)
+        #     if form.is_valid() and form.user_cache is not None:
+        #         user = form.user_cache
+        #         if user.is_active:
+        #             login(request, user, backend='core.auth.EmailBackend')
+        #             #login(request, user)
+        #             print('OK')
+        #             print(user)
+
         #     if user is not None and user.is_admin:
         #         login(request, user)
+        #         print(login(request, user))
         #         return redirect('index-admin')
         #     elif user is not None and user.is_tutor:
         #         login(request, user)
-        #         return redirect('index-tutor')
+        #         print('2')
+        #         # return redirect('index-tutor')
         #     elif user is not None and user.is_kursleiter:
         #         login(request, user)
-        #         return redirect('index-kursleiter')
+        #         print('3')
+        #         # return redirect('index-kursleiter')
         #     else:
-                # print('Benutzer ist nicht eingeloggt')
-                # messages.success('Benutzer ist nicht eingeloggt.') 
+        #         pass
+        #         # print('Benutzer ist nicht eingeloggt')
+        #         # messages.success('Benutzer ist nicht eingeloggt.') 
 
     form = AuthenticationForm()
     return render(request, 'user/login.html', {'form':form, 'messages': messages})
@@ -96,7 +123,6 @@ def logoutView(request):
     #         form = LoginForm()
 
     # return render(request, 'user/login.html', {'form':form})
-
 
 
 @login_required(login_url='/login')
@@ -146,7 +172,16 @@ def get_user_profile(request, id):
     return render(request, 'user/get-user-profile.html', context) 
 
 
+
+
+
+
 ############################
+
+
+
+
+
 
 def createKursleiter(request):
 
