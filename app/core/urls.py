@@ -1,9 +1,9 @@
 from django.urls import path
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-# from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework.authtoken.views import obtain_auth_token
 
-from core.views import *
+from .views import *
 
 urlpatterns = [
     path('' , Index , name="index-admin"),
@@ -30,10 +30,10 @@ urlpatterns = [
     path('list-blatt/', listBlatt, name='list-blatt'),
 
     # Erhalte Profil
-    path('get-user/<str:id>/', get_user_profile, name='get-user'),
-    path('get-kursleiter/<str:id>/', get_kursleiter_profile, name='get-kursleiter'),
-    path('get-tutor/<str:id>/', get_tutor_profile, name='get-tutor'),
-    path('get-dozent/<str:id>/', get_dozent_profile, name='get-dozent'),
+    # path('get-user/<str:id>/', get_user_profile, name='get-user'),
+    # path('get-kursleiter/<str:id>/', get_kursleiter_profile, name='get-kursleiter'),
+    # path('get-tutor/<str:id>/', get_tutor_profile, name='get-tutor'),
+    # path('get-dozent/<str:id>/', get_dozent_profile, name='get-dozent'),
 
     path('get-kurs/<str:id>/', get_kurs_info, name='get-kurs'),
     path('get-blatt/<str:id>/', get_blatt_info, name='get-blatt'),

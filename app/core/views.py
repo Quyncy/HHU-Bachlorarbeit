@@ -1,24 +1,21 @@
-from .forms import TutorProfileForm
-from .forms import (
-    DozentForm, BlattForm, KursleiterForm,
-    LoginForm,KursForm,TutorForm, TutorProfileForm, 
-    AuthenticationForm, CostumUserCreationForm, 
-    ) # KursleiterProfileForm,
-
-import requests, json
-
 from django.conf import settings
-
-from rest_framework.response import Response
-from rest_framework import status
-
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import login,logout, authenticate
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 
+from rest_framework.response import Response
+from rest_framework import status
+
+from .forms import (
+    DozentForm, BlattForm, KursleiterForm,
+    LoginForm, KursForm,TutorForm, 
+    AuthenticationForm, CostumUserCreationForm, 
+    )
+
+import requests, json
 
 # @login_required
 # def addToTutorGroup(request):
@@ -28,57 +25,42 @@ from django.contrib.auth.hashers import make_password
 
 
 
-@login_required(login_url='/login')
+@login_required(login_url='/login')     # der user muss eingeloggt sein und diese permission bsitzen um diese Seite zu sehen
+@permission_required('core.view_core')  # app_label permission
 def Index(request):
     return render(request, 'user/index-admin.html')
 
 
 def login_view(request):
     if request.POST:
-        form = AuthenticationForm(request=request, data=request.POST)
+        form = AuthenticationForm(request, request.POST)
 
-        # username = form.cleaned_data['username']
-        # password = form.cleaned_data['password']
-        # username = request.POST.get('username')
-        # password=request.POST.get('password')
-        # print('core views.py: login')
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            print('core views.py: login')
+            print(username)
+            print(password)
 
-        # user = authenticate(username=username, password=password)
-        # print('user: ')
-        # print(user)
-
-        if form.is_valid(): # muss nur is_active=True sein?
-            user=form.get_user()
+            user = authenticate(username=username, password=password)
+            print('user: ')
+            print(user)
             if user is not None:
                 login(request, user)
-                print('login(request, user): ')
+                print("login():   ------------")
                 print(login(request, user))
-                return redirect('index-admin')
+                url = 'http://127.0.0.1:8000/accounts/login/'
+                payload={
+                    'username': username,
+                    'password': password,
+                }
+                print(payload)
+                response = requests.post(url, data=payload)
 
-        if user is not None:
-            login(request, user)
-            print('login(request, user): ')
-            print(login(request, user))
-            return redirect('index-admin')
-            # A backend authenticated the credentials
-        elif user is not None and user.is_tutor:
-            login(request, user)
-            return redirect('index-tutor')
-        elif user is not None and user.is_kursleiter:
-            login(request, user)
-            return redirect('index-kursleiter')
-
-        # if form.is_valid(): # muss nur is_active=True sein?
-        #     user=form.get_user()
-        #     print(user)
-        #     if form.is_valid() and form.user_cache is not None:
-        #         user = form.user_cache
-        #         if user.is_active:
-        #             login(request, user, backend='core.auth.EmailBackend')
-        #             #login(request, user)
-        #             print('OK')
-        #             print(user)
-
+                if response.status_code == 200:
+                    print('Yeai')
+                    return redirect('index-admin')
+    
         #     if user is not None and user.is_admin:
         #         login(request, user)
         #         print(login(request, user))
@@ -101,9 +83,8 @@ def login_view(request):
 
 
 def logoutView(request):
-    if request.method == 'POST':
-        logout(request)
-        return redirect('login')
+    logout(request)
+    return redirect('login')
 
 # @csrf_protect
 # def loginPage(request):
@@ -179,12 +160,10 @@ def get_user_profile(request, id):
 ############################
 
 
-
-
-
-
 def createKursleiter(request):
-
+    """
+    Versenden die Kursleiter Daten an die API
+    """
     if request.POST:
         kursleiter_form = KursleiterForm(request.POST)
         url = 'http://127.0.0.1:8000/api/user/create-kursleiter/'
@@ -253,26 +232,10 @@ def get_kursleiter_profile(request, id):
 ###################
 
 def createTutor(request):
-#     {
-#     "password": "admin132",
-#     "last_login": null,
-#     "rolle": "Tutor",
-#     "email": "tutor@gmx.de",
-#     "vorname": "a",
-#     "nachname": "a",
-#     "is_active": false,
-#     "is_staff": false,
-#     "is_superuser": false,
-#     "is_admin": false,
-#     "is_dozent": false,
-#     "is_kursleiter": false,
-#     "is_tutor": true,
-#     "tutor_id": "qumai100",
-#     "arbeitsstunden": 8,
-#     "kurs": null,
-#     "groups": [],
-#     "user_permissions": []
-# }
+    """
+    Versenden die Tutor Daten an die API
+    """
+
     tutor_form = TutorForm()
     # tutorprofile_form = TutorProfileForm()
     url_get_kurs = "http://127.0.0.1:8000/api/kurs/list-kurs/"
@@ -310,19 +273,6 @@ def createTutor(request):
             
             if response.status_code == 200:
                 return Response("Tutor erfolreich gespeichert.", status=status.HTTP_200_OK)
-
-            # if response.status_code == 200:
-            #     tutorprofile_form = TutorProfileForm(request.POST)
-            #     url_create_tutorprofile = 'http://127.0.0.1:8000/api/user/create-tutorprofile/'
-            #     payload2 = {
-            #         'user' : response.user, # !!!!
-            #         'tutor_id':tutorprofile_form.cleaned_data['tutor_id'],
-            #         'kurs': tutorprofile_form.cleaned_data['kurs'].id,
-            #         'arbeitsstunden': tutorprofile_form.cleaned_data['arbeitsstunden'],
-            #     }
-            #     print(payload2)
-            #     r = requests.post(url_create_tutorprofile, data=payload2)
-            #     if r.status_code == 200:
               
             
     
@@ -330,7 +280,11 @@ def createTutor(request):
     return render(request, 'user/createtutor.html', context)
 
 
+
 def listTutor(request):
+    """
+    Empfängt die Daten aus der API und zeigt sie im Frontend an
+    """
     url = "http://127.0.0.1:8000/api/user/list-tutor/"
     response = requests.get(url).json()
     
@@ -339,6 +293,9 @@ def listTutor(request):
 
 
 def get_tutor_profile(request, pk):
+    """
+    Empfängt die Daten aus der API und zeigt sie im Frontend an
+    """
     url= f"http://127.0.0.1:8000/api/user/get-tutor/{pk}/"
     user = requests.get(url).json()
 
@@ -381,6 +338,9 @@ def createDozent(request):
 
 
 def listDozent(request):
+    """
+    Empfängt die Daten aus der API und zeigt sie im Frontend an
+    """
     url = "http://127.0.0.1:8000/api/user/list-dozent/"
     response = requests.get(url).json()
     context = {'user': response}
@@ -388,6 +348,9 @@ def listDozent(request):
     
 
 def get_dozent_profile(request, id):
+    """
+    Empfängt die Daten aus der API und zeigt sie im Frontend an
+    """
     url= f"http://127.0.0.1:8000/api/user/get-dozent/{id}/"
     user = requests.get(url).json()
 
@@ -399,6 +362,10 @@ def get_dozent_profile(request, id):
 ############################
 
 def createKurs(request):
+    """
+    Verschickt die Kurs Daten an den API Endpoint
+    """
+
     kurs_form = KursForm()
 
     if request.POST:
@@ -421,6 +388,9 @@ def createKurs(request):
 
 
 def listKurs(request):
+    """
+    Empfängt die Daten aus der API und zeigt sie im Frontend an
+    """
     url = "http://127.0.0.1:8000/api/kurs/list-kurs/"
     response = requests.get(url).json()
     context = {'kurs': response}
@@ -428,6 +398,9 @@ def listKurs(request):
 
 
 def get_kurs_info(request, pk):
+    """
+    Empfängt die Daten aus der API und zeigt sie im Frontend an
+    """
     url = f"http://127.0.0.1:8000/api/kurs/get-kurs/{pk}"
     response = requests.get(url).json()
 
@@ -439,6 +412,9 @@ def get_kurs_info(request, pk):
 
 
 def createBlatt(request):
+    """
+    Verschickt die Daten des Übungsblatts an die API
+    """
     blatt_form = BlattForm
 
     if request.POST:
@@ -452,7 +428,7 @@ def createBlatt(request):
                 'kurs': blatt_form.cleaned_data['kurs'].id,
             }
 
-            response = requests.post(url, data=payload)
+            response = requests.post(url, data=payload) # versendet die Daten an den API endpoint
             if response.status_code == '200':
                 return Response(status=status.HTTP_200_OK)
     
@@ -461,12 +437,18 @@ def createBlatt(request):
 
 
 def listBlatt(request):
+    """
+    Empfängt die Liste von Übungsblättern aus der API und zeigt sie im Frontend an
+    """
     url = 'http://127.0.0.1:8000/api/kurs/list-blatt/'
     response = requests.get(url).json()
     return render(request, 'user/listBlatt.html', {'blatt': response})
 
 
 def get_blatt_info(request, pk):
+    """
+    Empfängt die Übungsblatt Informationen aus der API und zeigt sie im Frontend an
+    """
     url = f"http://127.0.0.1:8000/api/kurs/get-blatt/{pk}"
     response = requests.get(url).json()
 

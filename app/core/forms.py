@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from core.models import *
+from .models import *
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
@@ -76,7 +76,6 @@ class CostumUserCreationForm(UserCreationForm):
 
 
 class CustomUserChangeForm(UserChangeForm):
-
     class Meta:
         model = User
         fields = ("email",)
@@ -95,8 +94,6 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput)
 
 
-###############################
-
 
 class KursleiterForm(UserCreationForm):
     class Meta:
@@ -106,9 +103,6 @@ class KursleiterForm(UserCreationForm):
         # 'is_staff', 'is_admin','is_superuser', 'is_dozent', 'is_tutor',]
         
 
-########################
-
-
 class TutorForm(UserCreationForm):
     class Meta:
         model = Tutor
@@ -117,15 +111,6 @@ class TutorForm(UserCreationForm):
         # 'is_staff', 'is_admin','is_superuser', 'is_dozent', 'is_kursleiter',]
 
 
-class TutorProfileForm(forms.ModelForm):
-    class Meta:
-        model = TutorProfile
-        fields = '__all__'
-        # fields = ['user, tutor_id, kurs, arbeitsstunden']
-
-        
-##############################
-
 
 class DozentForm(forms.ModelForm):
     class Meta:
@@ -133,73 +118,29 @@ class DozentForm(forms.ModelForm):
         fields = '__all__'
         #exclude=['rolle', 'last_login', 'groups', 'user_permissions', 'password']
         
-        # labels = {
-        #     'title': _('Titel'),
-        #     'vorname': _('Vorname'),
-        #     'nachname': _('Nachname'),
-        # }
-
-        # error_messages = {
-        #     'titel':{
-        #         'required': _('Title has to be choosen')
-        #     },
-        #     'vorname':{
-        #         'required': _('First name has to be entered')
-        #     },
-        #     'nachname': _('Last name has to be entered')
-        # },
-
-
-############################
 
 
 class KursForm(forms.ModelForm):
     class Meta:
         model = Kurs
         fields = '__all__'
-        # exclude=['dozent']
-
-        # labels := Bezeichnung
-        # labels = {
-        #     'kurs': _('Kursname eingeben'),
-        #     'beschreibung': _('Beschreibung eingegeben'),
-        #     'kursleiter': _('Kursleiter eingeben'),
-        # }
-        # error_messages = {
-        #     fields : {
-        #         'kurs': {
-        #             'required': _('Module name has to be entered')
-        #         },
-        #         'beschreibung': {
-        #             'required': _('Description has to be entered')
-        #         },
-        #         'Kursleiter': {
-        #             'required': _('Teacher has to be entered')
-        #         },
-        #     }
-        # }
+       
 
 
 class BlattForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(BlattForm, self).__init__(*args, **kwargs)
+        # help_text kann aktualisiert werden
+        self.fields['ass_name'].help_text = "Übungsblatt Nr. (update)"
+
     class Meta:
         model = Blatt
+        exclude = ('',) # == fields = '__all__'
+
+
+
+class BlattKorrekturForm(forms.ModelForm):
+    
+    class Meta:
+        model = BlattKorrektur
         fields = '__all__'
-
-
-# class TutorProfileForm(forms.ModelForm):
-#     class Meta:
-#         model=TutorProfile
-#         fields='__all__'
-
-#         label = {
-#             'user': _('Vorname'),
-#             'tutor_id': _('ID'),
-#             'kurs': _('Kurs'),
-#             'arbeitsstunden': _('Arbeitsstunden'),
-#             'anzahl_korrekturen': _('Anzahl Korrekturen'),
-#         }
-#         error_messages = {
-#             'user':{
-#                 'required': ('Vorname angeben')
-#             }
-#         }

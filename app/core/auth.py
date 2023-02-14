@@ -7,7 +7,9 @@ from django.contrib.auth.hashers import make_password
 
 
 class EmailBackend(ModelBackend): 
-
+    """
+    Backend zum authentifizieren der Email-Adresse und Password
+    """
     def authenticate(self, request, username=None, password=None, **kwargs):
         User = get_user_model()
         try:
@@ -21,32 +23,13 @@ class EmailBackend(ModelBackend):
                 return user
             return None
         except User.DoesNotExist:
-            return None
-
-
-        # if username is None:
-        #     username = kwargs.get(User.USERNAME_FIELD)
-        #     print(username)
-        # try:
-        #     case_insensitiv_username_field = '{}__iexact'.format(User.USERNAME_FIELD)
-        #     print(case_insensitiv_username_field)
-        #     user = User._default_manager.get(**{case_insensitiv_username_field: username})
-        # except User.DoesNotExist:
-        #     User.set_password(password)
-
-        # else:
-        #     if user.check_password(password) and self.user_can_authenticate:
-        #         print('check password')
-        #         return user
-
-
-        
+            return None 
 
     def get_user(self, id):
         User = get_user_model()
         try:
             print('Emailbackend: get_user: ')
             print(User.objects.get(id=id))
-            return User.objects.get(id=id) # <-- tried to get by email here
+            return User.objects.get(id=id)
         except User.DoesNotExist:
             return None

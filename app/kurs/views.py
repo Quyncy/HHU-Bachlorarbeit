@@ -7,9 +7,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Kurs, Blatt
+from core.models import Kurs, Blatt, BlattKorrektur
 
-from .serializers import KursSerializer, BlattSerializer
+from .serializers import KursSerializer, BlattSerializer, BlattKorrekturSerializer
 
 @api_view(['GET'])
 def kursApiOverView(request):
@@ -131,3 +131,17 @@ class BlattDetail(APIView):
         return Response("Übungsblatt wurde erfolgreich gelöscht.", )
 
 
+class CreateBlattKorrekturView(generics.CreateAPIView):
+    serializer_class = BlattKorrekturSerializer
+    permission_classes = []
+
+
+class ListBlattKorrekturView(generics.ListAPIView):
+    queryset = BlattKorrektur.objects.all()
+    serializer_class = BlattKorrekturSerializer
+    permission_classes = []
+
+
+class BlattKorrekturDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = BlattKorrekturSerializer
+    permission_classes = []

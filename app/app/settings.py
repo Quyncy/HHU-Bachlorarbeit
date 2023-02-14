@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
-    'rest_email_auth',
+    # 'rest_email_auth',
+    'guardian',
 ]
 
 MIDDLEWARE = [
@@ -145,10 +146,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # }
 
 
-AUTH_USER_MODEL = "core.User"
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.AllowAllUsersModelBackend',
     'core.auth.EmailBackend',
+    'guardian.backends.ObjectPermissionBackend',
     # 'rest_email_auth.authentication.VerifiedEmailBackend',
 ]
 
@@ -162,7 +164,8 @@ REST_FRAMEWORK = {
     ],
 }
 
-# LOGIN_REDIRECT_URL="list-user"
+
+LOGIN_REDIRECT_URL="list-user"
 
 
 #AUTHENTICATION_BACKENDS=['core.auth.EmailBackend']
@@ -186,9 +189,12 @@ REST_EMAIL_AUTH = {
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
 EMAIL_HOST_USER = '@emaileingeben'
 EMAIL_HOST_PASSWORD = '@einPasswort'
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = False
 EMAIL_USE_SSL = False
+
+
+AUTH_USER_MODEL = "core.User"

@@ -10,8 +10,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 
 from .serializers import (
-    UserSerializer, KursleiterSerializer, KursleiterProfileSerializer,
-    DozentSerializer, TutorSerializer, TutorProfileSerializer, AuthTokenSerializer
+    UserSerializer, KursleiterSerializer,
+    DozentSerializer, TutorSerializer, AuthTokenSerializer
 )
 # DozentProfilSerializer
 
@@ -20,8 +20,7 @@ from rest_framework.authtoken.models import Token
 from user.permissions import AdminOrReadOnly
 
 from core.models import (
-    User, Kursleiter, Dozent, Tutor, 
-    KursleiterProfile, TutorProfile
+    Kursleiter, Dozent, Tutor
     # DozentProfile, ,
 )
 
@@ -110,28 +109,36 @@ class UserListView(generics.ListAPIView):
     permission_classes=[]
 
 
-class UserDetailView(APIView):
-    permission_classes=[AdminOrReadOnly]
+class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = get_user_model().objects.all()
+    serializer_class = UserSerializer
+    permission_classes=[]
 
-    def get(self, request, pk):
-        user = get_user_model().objects.get(pk=pk)
-        serializer = UserSerializer(user, many=False)
-        return Response(serializer.data)
 
-    def put(self, request, pk):
-        user = get_user_model().objects.get(pk=pk)
-        serializer = UserSerializer(user, request.data)
+# class UserDetailView(APIView):
+#     permission_classes=[AdminOrReadOnly]
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+#     def get(self, request, pk):
+#         user = get_user_model().objects.get(pk=pk)
+#         serializer = UserSerializer(user, many=False)
+#         return Response(serializer.data)
 
-    def delete(self, request, pk):
-        user = get_user_model().objects.get(pk=pk)
-        user.delete()
-        return Response("User wurde erfolgreich gelöscht.")
+#     def put(self, request, pk):
+#         user = get_user_model().objects.get(pk=pk)
+#         serializer = UserSerializer(user, request.data)
+
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+
+#     def delete(self, request, pk):
+#         user = get_user_model().objects.get(pk=pk)
+#         user.delete()
+#         return Response("User wurde erfolgreich gelöscht.")
+
+
 
 
 
@@ -151,6 +158,11 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         """Retrieve and return the authenticated user."""
         return self.request.user
+
+
+
+
+
 
 
 ###################################
@@ -174,40 +186,46 @@ class KursleiterListView(generics.ListAPIView):
         return Response(serializer.data)
 
 
-class KursleiterDetailView(APIView):
-
-    def get(self, request, pk):
-        user = Kursleiter.objects.get(pk=pk)
-        serializer = KursleiterSerializer(user, many=False)
-        return Response(serializer.data)
-
-    def put(self, request, pk):
-        user = Kursleiter.objects.get(pk=pk)
-        serializer = KursleiterSerializer(user, request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        user = Kursleiter.objects.get(pk=pk)
-        user.delete()
-        return Response("Kursleiter wurde erfolgreich gelöscht.", status=status.HTTP_204_NO_CONTENT)
-
-
-########
-
-
-class CreateKursleiterProfileView(generics.CreateAPIView):
-    serializer_class = KursleiterProfileSerializer
-    permission_classes=[]
-
-
-class KursleiterProfileListView(generics.ListAPIView):
-    queryset = KursleiterProfile.objects.all()
+class KursleiterDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Kursleiter.objects.all()
     serializer_class = KursleiterSerializer
+    permission_classes = []
+
+
+# class KursleiterDetailView(APIView):
+
+#     def get(self, request, pk):
+#         user = Kursleiter.objects.get(pk=pk)
+#         serializer = KursleiterSerializer(user, many=False)
+#         return Response(serializer.data)
+
+#     def put(self, request, pk):
+#         user = Kursleiter.objects.get(pk=pk)
+#         serializer = KursleiterSerializer(user, request.data)
+
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#     def delete(self, request, pk):
+#         user = Kursleiter.objects.get(pk=pk)
+#         user.delete()
+#         return Response("Kursleiter wurde erfolgreich gelöscht.", status=status.HTTP_204_NO_CONTENT)
+
+
+# ########
+
+
+# class CreateKursleiterProfileView(generics.CreateAPIView):
+#     serializer_class = KursleiterProfileSerializer
+#     permission_classes=[]
+
+
+# class KursleiterProfileListView(generics.ListAPIView):
+#     queryset = KursleiterProfile.objects.all()
+#     serializer_class = KursleiterSerializer
 
 
 
@@ -223,57 +241,62 @@ class CreateTutorView(generics.CreateAPIView):
 
 
 class TutorListView(generics.ListAPIView):
-    # TutorProfile
     queryset = Tutor.objects.all()
     serializer_class = TutorSerializer
     permission_classes = []
 
 
-class TutorDetailView(APIView):
-    permission_classes = [AdminOrReadOnly]
+class TutorDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Tutor.objects.all()
+    serializer_class = TutorSerializer
+    permission_classes = []
 
-    def get(self, request, pk):
-        user = Tutor.objects.get(pk=pk)
-        serializer = TutorSerializer(user, many=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request, pk):
-        tutor = Tutor.objects.get(pk=pk)
-        serializer = TutorSerializer(tutor, request.data)
+# class TutorDetailView(APIView):
+#     permission_classes = [AdminOrReadOnly]
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+#     def get(self, request, pk):
+#         user = Tutor.objects.get(pk=pk)
+#         serializer = TutorSerializer(user, many=False)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request, pk):
-        user = Tutor.objects.get(pk=pk)
-        user.delete()
-        return Response("Tutor wurde erfolgreich gelöscht.", status=status.HTTP_204_NO_CONTENT)
+#     def put(self, request, pk):
+#         tutor = Tutor.objects.get(pk=pk)
+#         serializer = TutorSerializer(tutor, request.data)
+
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+
+#     def delete(self, request, pk):
+#         user = Tutor.objects.get(pk=pk)
+#         user.delete()
+#         return Response("Tutor wurde erfolgreich gelöscht.", status=status.HTTP_204_NO_CONTENT)
+
 
 
 ##############
 
 
 
-class TutorProfileView(generics.CreateAPIView):
-    serializer_class = TutorProfileSerializer
-    permission_classes=[]
+# class TutorProfileView(generics.CreateAPIView):
+#     serializer_class = TutorProfileSerializer
+#     permission_classes=[]
 
 
-class TutorProfileListView(generics.ListAPIView):
-    queryset = TutorProfile.objects.all()
-    serializer_class = TutorProfileSerializer
-    permission_classes = []
+# class TutorProfileListView(generics.ListAPIView):
+#     queryset = TutorProfile.objects.all()
+#     serializer_class = TutorProfileSerializer
+#     permission_classes = []
 
 
 
 
-class CreateTokenView(ObtainAuthToken):
-    """Create a new auth token for user"""
-    serializer_class = AuthTokenSerializer
-    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+
+
 
     
 #################################################
@@ -291,28 +314,31 @@ class DozentListView(generics.ListAPIView):
     serializer_class = DozentSerializer
 
 
-class DozentDetailView(APIView):
-
-    def get(self, request, pk):
-        user = Dozent.objects.get(pk=pk)
-        serializer = DozentSerializer(user, many=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, pk):
-        user = Dozent.objects.get(pk=pk)
-        serializer = DozentSerializer(user, request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
-
-    def delete(self, request, pk):
-        user = Dozent.objects.get(pk=pk)
-        user.delete()
-        return Response("Dozent wurde erfolgreich gelöscht.", status=status.HTTP_204_NO_CONTENT)
+class DozentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Dozent.objects.all()
+    serializer_class = DozentSerializer
+    permission_classes =[]
 
 
+# class DozentDetailView(APIView):
 
-##################################################
+#     def get(self, request, pk):
+#         user = Dozent.objects.get(pk=pk)
+#         serializer = DozentSerializer(user, many=False)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+#     def put(self, request, pk):
+#         user = Dozent.objects.get(pk=pk)
+#         serializer = DozentSerializer(user, request.data)
+
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST )
+
+#     def delete(self, request, pk):
+#         user = Dozent.objects.get(pk=pk)
+#         user.delete()
+#         return Response("Dozent wurde erfolgreich gelöscht.", status=status.HTTP_204_NO_CONTENT)
+

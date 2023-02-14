@@ -1,22 +1,23 @@
 """
-Datbank mMdels.
+Datbankmodel.
 """
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
-
-from django.db.models.signals import post_save
+from django.contrib.auth.hashers import make_password
 from django.dispatch import receiver
+from django.db.models.signals import post_save
 
+# from guardian.shortcuts import assign_perm
 # from rest_framework.authtoken.models import Token
 
 
 class UserManager(BaseUserManager):
-    """Manager for users."""
+    """Manager für Benutzer."""
 
     def create_user(self, email, password, **extrafields):
         """
-        Creates and saves a User with the given email and password.
+        Erstellt Benutzer mit email und gehashtes Passwort
         """
         if not email:
             raise ValueError('The given email must be set')
@@ -48,8 +49,9 @@ class UserManager(BaseUserManager):
         return user
 
 
+
 class User(AbstractBaseUser, PermissionsMixin):
-    """User in the system."""
+    """Benutzer in dem System."""
     class Rolle(models.TextChoices):
         Admin = "Admin", 'Admin'
         Tutor = "Tutor", 'Tutor'
@@ -73,82 +75,31 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-
     USERNAME_FIELD = 'email'
 
+    # def save(self, *args, **kwargs):
+    #     if not self.pk:
+    #         print("models.py: usermanager save:")
+    #         print()
+    #         # print(self.base_user)
+    #         # self.rolle = self.base_user
+    #         # email senden verifizieren active auf True setzen und
+    #         # passwort setzen
+    #     return super().save(*args, **kwargs)
+
     def save(self, *args, **kwargs):
-        if not self.id:
-            print("models.py: usermanager save:")
-            # print(self.base_user)
-            # self.rolle = self.base_user
-            # email senden verifizieren active auf True setzen und
-            # passwort setzen
-        return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
+    def set_password(self, password):
+        self.password = make_password(password)
 
 
-
-
-
-###################################
-
-
-
-
-
-
-
-class Kurs(models.Model):
-    """Kurse im System"""
-    kurs = models.CharField(max_length=50, unique=True)
-    beschreibung = models.TextField(blank=True)
-    ref_id = models.CharField(max_length=100, unique=True)
-    # dozent = models.ForeignKey(Dozent, on_delete=models.CASCADE, related_name='kurs')
-
-    class Meta:
-        verbose_name_plural = "Kurse"
-
-    def __str__(self):
-        return f"{self.kurs}"
-
-
-
-
-class Blatt(models.Model):
-    """Übungsblätter im System"""
-    ass_name = models.CharField(max_length=200)
-    ass_id = models.CharField(max_length=100, unique=True)
-    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE, default=None, related_name="blatt")
-
-    class Meta:
-        verbose_name_plural = "Übungsblätter"
-
-    def __str__(self):
-        return f"{self.ass_name}"
-    
-
-##########################################
-
-# class KursleiterManager(BaseUserManager):
-
-#     def get_queryset(self, *args, **kwargs):
-#         queryset = get_user_model().objects.filter(rolle = User.Rolle.Kursleiter)
-#         return queryset
 
 
 class Kursleiter(User):
     """ 
-    
-    
-    Problem.
-    
-    Kursleiter werden auf der Admin Seite anders gespeichert und nicht gehasht!!!!
-    
-    
-    
-    
-    
+    Kursleiter im System
     """
-    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True, related_name="kursleiter")
     rolle = User.Rolle.Kursleiter
 
     class Meta:
@@ -159,14 +110,46 @@ class Kursleiter(User):
 
 
 
+class Dozent(User):
+    """ 
+    Dozent im System
+    """
+    class Titel(models.TextChoices):
+        Prof = "Prof", 'Prof'
+        Dr = "Dr", 'Dr'
+
+    titel = models.CharField(("Titel"), max_length=10, choices=Titel.choices, default='Prof.')
+    rolle = User.Rolle.Dozent
+
+    class Meta:
+        verbose_name_plural = "Dozenten"
 
 
-#########################
+
+class Kurs(models.Model):
+    """
+    Kurse im System
+    """
+    kurs = models.CharField(max_length=50, unique=True)
+    beschreibung = models.TextField()
+    # dozent = models.OneToOneField(Dozent, on_delete=models.CASCADE, related_name='kurs_dozent')
+    ref_id = models.CharField(max_length=100, unique=True)  # ref ID 1223794
+    kursleiter = models.OneToOneField(Kursleiter, on_delete=models.CASCADE, related_name='kurs_kursleiter')
+
+    class Meta:
+        verbose_name_plural = "Kurse"
+
+    def __str__(self):
+        return f"{self.kurs}"
+
 
 
 class Tutor(User):
+    """ 
+    Tutor im System
+    """
     # user = models.OneToOneField(User, on_delete=models.CASCADE)
-    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True,related_name="tutor")
+    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True,related_name='tutor')
     tutor_id = models.CharField(max_length=100, unique=True, null=True, blank=True,default=None)
     arbeitsstunden = models.FloatField(default=0)
     
@@ -177,26 +160,46 @@ class Tutor(User):
 
 
 
-
-#####################################
-
-
-
-class Dozent(User):
-    class Titel(models.TextChoices):
-        Prof = "Prof", 'Prof'
-        Dr = "Dr", 'Dr'
-
-    titel = models.CharField(("Titel"), max_length=10, choices=Titel.choices, default='Prof.')
-    rolle = User.Rolle.Dozent
+class Blatt(models.Model):
+    """
+    Übungsblätter der Studenten im System
+    """
+    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE, default=None, related_name="blatt")
+    ass_name = models.CharField(max_length=200, help_text='Name des Übungsblatts')
+    ass_id = models.CharField(max_length=100, unique=True)
+    tutor_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    student = models.CharField(max_length=200)
+    korrektur_notiz = models.TextField()
 
     class Meta:
-        verbose_name_plural = "Dozenten"
+        verbose_name_plural = "Übungsblätter"
+
+    # def __str__(self):
+    #     return f"{self.ass_name}"
     
 
+class BlattKorrektur(models.Model):
+    """
+    Übungsblatt Status im System
+    """
+    ass_id = models.ForeignKey(Blatt, on_delete=models.CASCADE)
+    tutor_id = models.ForeignKey(Tutor, on_delete=models.CASCADE)
+    status = models.BooleanField(default=False)
+    total_points = models.FloatField(default=0) 
 
 
 
+
+##########################################
+
+# class KursleiterManager(BaseUserManager):
+
+#     def get_queryset(self, *args, **kwargs):
+#         queryset = get_user_model().objects.filter(rolle = User.Rolle.Kursleiter)
+#         return queryset
+
+
+#####################################
 
 
 # @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -230,62 +233,7 @@ class Dozent(User):
 #         Token.objects.create(user=instance)
 
 
-
-
-
-
-
-
-
 ####################################
-
-
-
-class KursleiterProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True,related_name="kursleiterprofile")
-
-    class Meta:
-        verbose_name_plural = "Kursleiter Profil"
-
-    def __str__(self):
-        return f"{self.user.email}"
-
-
-
-
-class TutorProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    kurs = models.ForeignKey(Kurs, on_delete=models.CASCADE,null=True, blank=True, related_name="tutorprofile")
-    tutor_id = models.CharField(max_length=100, unique=True, null=True, blank=True,default=None)
-    arbeitsstunden = models.FloatField(default=0)
-
-    class Meta:
-        verbose_name_plural = "Tutor Profil"
-
-    def __str__(self):
-        return f"{self.user.email}"
-
-
-
-
-class DozentProfile(models.Model):
-    class Titel(models.TextChoices):
-        Prof = "Prof", 'Prof'
-        Dr = "Dr", 'Dr'
-
-    titel = models.CharField(("Titel"), max_length=10, choices=Titel.choices, default='Prof.')
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name_plural = "Dozent Profil"
-
-        
-
- #############
-
-
-
 
 
 # @receiver(post_save, sender=get_user_model())

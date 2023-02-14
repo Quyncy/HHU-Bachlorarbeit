@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import Kurs, Blatt, Dozent, Kursleiter
+from core.models import Kurs, Blatt, BlattKorrektur, Dozent, Kursleiter
 
 
 
@@ -41,6 +41,12 @@ class KursSerializer(serializers.ModelSerializer):
         fields = '__all__'  
         # ('kurs', 'beschreibung', 'ref_id', 'dozent', )
         # fields = ('id', 'kurs', 'beschreibung',)
+
+
+class BlattKorrekturSerializer(serializers.ModelSerializer):
+    class Meta:
+        models = BlattKorrektur
+        fields = '__all__'
 
 
 class DozentSerializer(serializers.ModelSerializer):

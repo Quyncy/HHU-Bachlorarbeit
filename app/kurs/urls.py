@@ -18,4 +18,6 @@ urlpatterns = [
     path('get-blatt/<str:pk>', views.BlattDetail.as_view(), name='get-blatt'),
     #path('update-blatt/<str:pk>', views.KursDetail.as_view(), name='update-blatt'),
     #path('delete-blatt/<str:pk>', views.KursDetail.as_view(), name='delete-blatt'),
+
+    path('create-blattkorrektur/', views.CreateBlattKorrekturView.as_view(), name='create-blattkorrektur'),
 ]
